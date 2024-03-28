@@ -33,6 +33,23 @@ impl KvNamespace {
             value: String::new(),
         }
     }
+
+    /// Read a KV pair
+    pub fn read_kv(&self, key_name: String) -> ReadKV {
+        ReadKV {
+            namespace_id: self.namespace_id.clone(),
+            key_name,
+        }
+    }
+
+    /// Read the metadata for a KV pair
+    pub fn read_kv_metadata<Meta: DeserializeOwned>(&self, key_name: String) -> ReadKVMeta<Meta> {
+        ReadKVMeta {
+            namespace_id: self.namespace_id.clone(),
+            key_name,
+            _meta: PhantomData,
+        }
+    }
 }
 
 /// [Write KV pair with metadata](https://developers.cloudflare.com/api/operations/workers-kv-namespace-write-key-value-pair-with-metadata) API
