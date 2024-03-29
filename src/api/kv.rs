@@ -7,7 +7,7 @@ use reqwest::{multipart::Form, Method};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
 use crate::{
-    request::{CfReqAuth, CfReqMeta, CfRes},
+    request::{CfReqAuth, CfReqMeta},
     Result,
 };
 
@@ -76,11 +76,7 @@ impl WriteKVWithMeta {
 
 /// Success response from the [Write KV pair with metadata](https://developers.cloudflare.com/api/operations/workers-kv-namespace-write-key-value-pair-with-metadata#response-body) API
 #[derive(Serialize, Deserialize)]
-pub struct WriteKVWithMetaRes {}
-
-impl CfRes for WriteKVWithMetaRes {
-    const IS_SUCCESS_WRAPPED: bool = true;
-}
+pub struct WriteKVWithMetaRes;
 
 impl CfReqMeta for WriteKVWithMeta {
     const METHOD: Method = Method::PUT;
@@ -121,10 +117,6 @@ pub struct ReadKV {
 #[derive(Serialize, Deserialize)]
 pub struct ReadKVRes(pub String);
 
-impl CfRes for ReadKVRes {
-    const IS_SUCCESS_WRAPPED: bool = false;
-}
-
 impl CfReqMeta for ReadKV {
     const METHOD: Method = Method::GET;
     type JsonResponse = ReadKVRes;
@@ -157,10 +149,6 @@ pub struct ReadKVMeta<Meta> {
 /// Metadata for the KV pair
 #[derive(Deserialize)]
 pub struct ReadKVMetaRes<Meta>(pub Meta);
-
-impl<Meta: DeserializeOwned> CfRes for ReadKVMetaRes<Meta> {
-    const IS_SUCCESS_WRAPPED: bool = true;
-}
 
 impl<Meta: DeserializeOwned + Send> CfReqMeta for ReadKVMeta<Meta> {
     const METHOD: Method = Method::GET;

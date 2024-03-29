@@ -10,7 +10,7 @@ use std::sync::Arc;
 
 use consts::CF_BASE_URL;
 pub use error::*;
-use request::{CfReq, CfReqAuth, CfReqMeta, CfRes};
+use request::{CfReq, CfReqAuth, CfReqMeta};
 use reqwest::{multipart::Form, IntoUrl, Method, RequestBuilder, Url};
 use serde::Serialize;
 pub use types::*;
@@ -85,13 +85,8 @@ impl Cloudflare {
             let err: CfErrRes = resp.json().await?;
             return Err(Error::Cloudflare(err.errors));
         }
-        let res = if Req::JsonResponse::IS_SUCCESS_WRAPPED {
-            let res: CfSuccessRes<Req::JsonResponse> = resp.json().await?;
-            res.result
-        } else {
-            resp.json().await?
-        };
-        Ok(res)
+        let res: CfSuccessRes<Req::JsonResponse> = resp.json().await?;
+        Ok(res.result)
     }
 
     /// Send a request to the Cloudflare API.

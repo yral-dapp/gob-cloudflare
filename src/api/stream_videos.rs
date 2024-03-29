@@ -2,7 +2,7 @@
 //! See [Cloudflare Docs](https://developers.cloudflare.com/stream/)
 use std::{collections::HashMap, time::Duration};
 
-use crate::{request::CfRes, CfReqAuth, CfReqMeta};
+use crate::{CfReqAuth, CfReqMeta};
 use reqwest::Method;
 use serde::{Deserialize, Serialize};
 
@@ -58,10 +58,6 @@ impl DirectUpload {
     }
 }
 
-impl CfRes for DirectUploadRes {
-    const IS_SUCCESS_WRAPPED: bool = true;
-}
-
 impl CfReqMeta for DirectUpload {
     const METHOD: Method = Method::POST;
     type JsonResponse = DirectUploadRes;
@@ -94,10 +90,6 @@ impl CreateDownloads {
             identifier: identifier.into(),
         }
     }
-}
-
-impl CfRes for CreateDownloadsRes {
-    const IS_SUCCESS_WRAPPED: bool = true;
 }
 
 impl CfReqMeta for CreateDownloads {
@@ -151,10 +143,6 @@ impl VideoDetails {
             identifier: identifier.into(),
         }
     }
-}
-
-impl CfRes for VideoDetailsRes {
-    const IS_SUCCESS_WRAPPED: bool = true;
 }
 
 impl CfReqMeta for VideoDetails {
