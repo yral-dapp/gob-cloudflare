@@ -3,6 +3,7 @@
 
 use std::marker::PhantomData;
 
+use bytes::Bytes;
 use reqwest::{multipart::Form, Method};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
@@ -80,7 +81,7 @@ pub struct WriteKVWithMetaRes;
 
 impl CfReqMeta for WriteKVWithMeta {
     const METHOD: Method = Method::PUT;
-    type JsonResponse = WriteKVWithMetaRes;
+    type Response = WriteKVWithMetaRes;
 }
 
 impl CfReqAuth for WriteKVWithMeta {
@@ -114,12 +115,15 @@ pub struct ReadKV {
 }
 
 /// Value corresponding to the key
-#[derive(Serialize, Deserialize)]
-pub struct ReadKVRes(pub String);
+pub type ReadKVRes = String;
 
 impl CfReqMeta for ReadKV {
     const METHOD: Method = Method::GET;
-    type JsonResponse = ReadKVRes;
+    type Response = ReadKVRes;
+
+    fn deserialize_response(body: Bytes) -> Result<Self::Response> {
+        Ok(std::str::from_utf8(&body)?.to_string())
+    }
 }
 
 impl CfReqAuth for ReadKV {
@@ -152,7 +156,7 @@ pub struct ReadKVMetaRes<Meta>(pub Meta);
 
 impl<Meta: DeserializeOwned + Send> CfReqMeta for ReadKVMeta<Meta> {
     const METHOD: Method = Method::GET;
-    type JsonResponse = ReadKVMetaRes<Meta>;
+    type Response = ReadKVMetaRes<Meta>;
 }
 
 impl<Meta: DeserializeOwned + Send> CfReqAuth for ReadKVMeta<Meta> {

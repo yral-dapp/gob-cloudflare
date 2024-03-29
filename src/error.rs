@@ -1,3 +1,5 @@
+use std::str::Utf8Error;
+
 use super::CfApiErr;
 use thiserror::Error;
 
@@ -13,6 +15,8 @@ pub enum Error {
     Json(#[from] serde_json::Error),
     #[error("error(s) from cloudflare: {0:?}")]
     Cloudflare(Vec<CfApiErr>),
+    #[error("invalid utf8 string: {0}")]
+    Utf8(#[from] Utf8Error),
 }
 
 /// Result type for the Cloudflare API client

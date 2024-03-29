@@ -69,7 +69,7 @@ impl Cloudflare {
         &self,
         req: Req,
         reqb: RequestBuilder,
-    ) -> Result<Req::JsonResponse> {
+    ) -> Result<Req::Response> {
         let reqb = if Req::METHOD == Method::GET {
             reqb.query(&req)
         } else {
@@ -78,19 +78,18 @@ impl Cloudflare {
         self.send_inner::<Req>(reqb).await
     }
 
-    async fn send_inner<Req: CfReqMeta>(&self, reqb: RequestBuilder) -> Result<Req::JsonResponse> {
+    async fn send_inner<Req: CfReqMeta>(&self, reqb: RequestBuilder) -> Result<Req::Response> {
         let resp = reqb.send().await?;
         let status = resp.status();
         if !status.is_success() {
             let err: CfErrRes = resp.json().await?;
             return Err(Error::Cloudflare(err.errors));
         }
-        let res: CfSuccessRes<Req::JsonResponse> = resp.json().await?;
-        Ok(res.result)
+        Req::deserialize_response(resp.bytes().await?)
     }
 
     /// Send a request to the Cloudflare API.
-    pub async fn send<Req: CfReq + Serialize>(&self, req: Req) -> Result<Req::JsonResponse> {
+    pub async fn send<Req: CfReq + Serialize>(&self, req: Req) -> Result<Req::Response> {
         let reqb = self.req_builder(Req::METHOD, self.base_url.join(Req::PATH)?, None);
         self.send_json(req, reqb).await
     }
@@ -120,7 +119,7 @@ impl CloudflareAuth {
     }
 
     /// Send an unauthenticated request to the Cloudflare API.
-    pub async fn send<Req: CfReq + Serialize>(&self, req: Req) -> Result<Req::JsonResponse> {
+    pub async fn send<Req: CfReq + Serialize>(&self, req: Req) -> Result<Req::Response> {
         self.inner.send(req).await
     }
 
@@ -131,10 +130,7 @@ impl CloudflareAuth {
     }
 
     /// Send an authenticated request to the Cloudflare API.
-    pub async fn send_auth<Req: CfReqAuth + Serialize>(
-        &self,
-        req: Req,
-    ) -> Result<Req::JsonResponse> {
+    pub async fn send_auth<Req: CfReqAuth + Serialize>(&self, req: Req) -> Result<Req::Response> {
         let url = self.build_url(&req)?;
         let reqb = self.inner.req_builder(Req::METHOD, url, Some(&self.creds));
         self.inner.send_json(req, reqb).await
@@ -144,7 +140,7 @@ impl CloudflareAuth {
     pub async fn send_auth_multipart<Req: CfReqAuth + Into<Form>>(
         &self,
         req: Req,
-    ) -> Result<Req::JsonResponse> {
+    ) -> Result<Req::Response> {
         let url = self.build_url(&req)?;
         let reqb = self.inner.req_builder(Req::METHOD, url, Some(&self.creds));
         let reqb = reqb.multipart(req.into());

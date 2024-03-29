@@ -60,7 +60,7 @@ impl DirectUpload {
 
 impl CfReqMeta for DirectUpload {
     const METHOD: Method = Method::POST;
-    type JsonResponse = DirectUploadRes;
+    type Response = DirectUploadRes;
 }
 
 impl CfReqAuth for DirectUpload {
@@ -94,7 +94,7 @@ impl CreateDownloads {
 
 impl CfReqMeta for CreateDownloads {
     const METHOD: Method = Method::POST;
-    type JsonResponse = CreateDownloadsRes;
+    type Response = CreateDownloadsRes;
 }
 
 impl CfReqAuth for CreateDownloads {
@@ -147,7 +147,7 @@ impl VideoDetails {
 
 impl CfReqMeta for VideoDetails {
     const METHOD: Method = Method::GET;
-    type JsonResponse = VideoDetailsRes;
+    type Response = VideoDetailsRes;
 }
 
 impl CfReqAuth for VideoDetails {
