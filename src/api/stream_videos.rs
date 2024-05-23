@@ -127,12 +127,24 @@ pub struct VideoStatus {
     pub state: String,
 }
 
+
+#[derive(Serialize,Deserialize,Default)]
+/// Metadata for video is a map. This maybe set differently by different clients.
+pub struct VideoMeta {
+    #[serde(flatten)]
+    /// simplest implementation for a generic json is HashMap.
+    /// Caution: This hashmap currently ONLY allows String keys and String values
+    pub map: HashMap<String, String>,
+}
+
 /// Success response from the [Retrieve Video Details](https://developers.cloudflare.com/api/operations/stream-videos-retrieve-video-details#Responses) API
-/// Note: This response is not complete, only the status is returned
+/// Note: This response is not complete, only the status and meta is returned
 #[derive(Serialize, Deserialize)]
 pub struct VideoDetailsRes {
     /// Video status
     pub status: VideoStatus,
+    /// Metadata for video is a map. This maybe set differently by different clients.
+    pub meta:  VideoMeta
 }
 
 impl VideoDetails {
@@ -151,6 +163,56 @@ impl CfReqMeta for VideoDetails {
 }
 
 impl CfReqAuth for VideoDetails {
+    type Url = String;
+
+    fn path(&self, account_id: &str) -> String {
+        format!("accounts/{account_id}/stream/{}", self.identifier)
+    }
+}
+
+
+/// [Edit video details](https://developers.cloudflare.com/api/operations/stream-videos-update-video-details) API
+#[derive(Serialize)]
+pub struct EditVideoDetails {
+    #[serde(skip)]
+    identifier: String,
+    meta: HashMap<String,String>
+}
+
+impl EditVideoDetails{
+     /// Edit Video Metadata
+    /// identifier is the video's uid
+    pub fn new(identifier: impl Into<String>, meta:  HashMap<String,String> ) -> Self {
+        Self {
+            identifier: identifier.into(),
+            meta
+        }
+    }
+
+    /// Add metadata to the video
+    pub fn add_meta(mut self, key: impl Into<String>, value: impl Into<String>) -> Self {
+        self.meta.insert(key.into(), value.into());
+        self
+    }
+
+}
+/// Success response from the [Edit video details](https://developers.cloudflare.com/api/operations/stream-videos-update-video-details) API
+/// Note: This response is not complete
+#[derive(Serialize, Deserialize)]
+pub struct EditVideoDetailsRes {
+    /// Video status
+    pub status: VideoStatus,
+    /// Metadata for video is a map. This maybe set differently by different clients.
+    pub meta:  VideoMeta
+}
+
+
+impl CfReqMeta for EditVideoDetails {
+    const METHOD: Method = Method::POST;
+    type Response = EditVideoDetailsRes;
+}
+
+impl CfReqAuth for EditVideoDetails {
     type Url = String;
 
     fn path(&self, account_id: &str) -> String {
