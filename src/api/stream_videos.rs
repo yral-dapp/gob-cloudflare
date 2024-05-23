@@ -127,16 +127,6 @@ pub struct VideoStatus {
     pub state: String,
 }
 
-
-#[derive(Serialize,Deserialize,Default)]
-/// Metadata for video is a map. This maybe set differently by different clients.
-pub struct VideoMeta {
-    #[serde(flatten)]
-    /// simplest implementation for a generic json is HashMap.
-    /// Caution: This hashmap currently ONLY allows String keys and String values
-    pub map: HashMap<String, String>,
-}
-
 /// Success response from the [Retrieve Video Details](https://developers.cloudflare.com/api/operations/stream-videos-retrieve-video-details#Responses) API
 /// Note: This response is not complete, only the status and meta is returned
 #[derive(Serialize, Deserialize)]
@@ -144,7 +134,7 @@ pub struct VideoDetailsRes {
     /// Video status
     pub status: VideoStatus,
     /// Metadata for video is a map. This maybe set differently by different clients.
-    pub meta:  VideoMeta
+    pub meta:  HashMap<String, String>
 }
 
 impl VideoDetails {
@@ -172,7 +162,7 @@ impl CfReqAuth for VideoDetails {
 
 
 /// [Edit video details](https://developers.cloudflare.com/api/operations/stream-videos-update-video-details) API
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize, Default)]
 pub struct EditVideoDetails {
     #[serde(skip)]
     identifier: String,
@@ -182,12 +172,12 @@ pub struct EditVideoDetails {
 impl EditVideoDetails{
      /// Edit Video Metadata
     /// identifier is the video's uid
-    pub fn new(identifier: impl Into<String>, meta:  HashMap<String,String> ) -> Self {
+    pub fn new(identifier: impl Into<String>, meta:   HashMap<String,String> ) -> Self {
         Self {
             identifier: identifier.into(),
             meta
-        }
-    }
+        } 
+     }
 
     /// Add metadata to the video
     pub fn add_meta(mut self, key: impl Into<String>, value: impl Into<String>) -> Self {
@@ -203,7 +193,7 @@ pub struct EditVideoDetailsRes {
     /// Video status
     pub status: VideoStatus,
     /// Metadata for video is a map. This maybe set differently by different clients.
-    pub meta:  VideoMeta
+    pub meta:  HashMap<String, String>
 }
 
 
